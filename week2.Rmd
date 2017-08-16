@@ -1,0 +1,54 @@
+---
+title: "Week 2 - Assignment"
+author: "Alexander A."
+date: "August 16, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Description
+This map visualizes [French invasion of Russia](https://en.wikipedia.org/wiki/French_invasion_of_Russia). The map shows the general path of the Napoleon`s army and the number of combatants during the war as well as the temperature in Celsius degrees.
+
+## Map
+Loading `leaflet` package, required data and creating the palette
+```{r load}
+library(leaflet)
+library(HistData)
+
+data(Minard.troops)
+data(Minard.cities)
+data(Minard.temp)
+
+troops <- Minard.troops[Minard.troops$group == 1, ]
+Minard.temp$lat <- troops$lat[c(16, 22, 23, 25:27, 29:31)]
+
+qpal <- colorNumeric(
+  palette = "RdYlBu",
+  domain = troops$survivors,
+  reverse = T
+)
+
+```
+
+Creating the map
+```{r map}
+leaflet() %>% 
+  addTiles() %>%
+  addPolylines(lng = troops$long, lat = troops$lat, weight = 2) %>%
+  addCircles(lng = troops$long, 
+             lat = troops$lat, 
+             weight = 1,
+             radius = 10000,
+             popup = troops$survivors, 
+             label = as.character(troops$survivors),
+             fillColor = qpal(troops$survivors),
+             fillOpacity = 0.8) %>%
+  addMarkers(lng = Minard.temp$long, 
+             lat = Minard.temp$lat, 
+             popup = Minard.temp$temp, 
+             label = as.character(Minard.temp$temp)) %>%
+  addLegend(pal = qpal, values = troops$survivors, opacity = 1, title = "Combatants")
+```
